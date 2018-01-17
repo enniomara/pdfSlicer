@@ -2,6 +2,10 @@ import PyPDF2
 import argparse
 import copy
 import os
+import time
+from multiprocessing import Pool
+
+start = time.time()
 
 
 def slice_pdf(file_name: str) -> None:
@@ -50,9 +54,13 @@ group.add_argument('-f', '--file', help='Specify a file to slice.')
 args = parser.parse_args()
 
 if args.directory is not None:
+    pool = Pool()
     files = [f for f in os.listdir(args.directory) if not (not os.path.isfile(f) or not f.endswith('.pdf') or f.endswith('-output.pdf'))]
-    for file in files:
-        slice_pdf(file)
+    # run through the files asynchronously
+    pool.map(slice_pdf, files)
 
 if args.file is not None:
     slice_pdf(args.file)
+
+end = time.time()
+print('Time taken: ', (end - start), ' seconds')
